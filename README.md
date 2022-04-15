@@ -1,6 +1,6 @@
 # learn_rl
 
-### Installation Guide
+## Installation Guide
 
 Clone the repository:
 
