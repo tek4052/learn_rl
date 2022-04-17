@@ -1,2 +1,7 @@
 pandas
 tabulate
+gym
+pyglet
+tensorflow
+keras
+keras-rl2
