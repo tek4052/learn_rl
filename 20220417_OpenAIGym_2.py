@@ -6,6 +6,15 @@ from gym import Env
 from gym.spaces import Box, Discrete
 import random
 
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Flatten
+from tensorflow.keras.optimizers import Adam
+
+from rl.agents import DQNAgent
+from rl.policy import BoltzmannQPolicy
+from rl.memory import SequentialMemory
+
+import datetime
 
 class CustomEnv(Env):
     def __init__(self):
@@ -42,30 +51,8 @@ env = CustomEnv()
 env.observation_space.sample()
 env.action_space.sample()
 
-episodes = 20  # 20 shower episodes
-for episode in range(1, episodes + 1):
-    state = env.reset()
-    done = False
-    score = 0
-
-    while not done:
-        action = env.action_space.sample()
-        n_state, reward, done, info = env.step(action)
-        score += reward
-    print('Episode:{} Score:{}'.format(episode, score))
-
-
-import numpy as np
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Flatten
-from tensorflow.keras.optimizers import Adam
-
-
 states = env.observation_space.shape
 actions = env.action_space.n
-
-print(states)
-print(actions)
 
 def build_model(states, actions):
     model = Sequential()
@@ -74,29 +61,29 @@ def build_model(states, actions):
     model.add(Dense(actions, activation='linear'))
     return model
 
-
-# del model
 model = build_model(states, actions)
 model.summary()
-
-
-from rl.agents import DQNAgent
-from rl.policy import BoltzmannQPolicy
-from rl.memory import SequentialMemory
-
 
 def build_agent(model, actions):
     policy = BoltzmannQPolicy()
     memory = SequentialMemory(limit=50000, window_length=1)
-    dqn = DQNAgent(model=model, memory=memory, policy=policy,
-                  nb_actions=actions, nb_steps_warmup=10, target_model_update=1e-2)
+    dqn = DQNAgent(model=model,
+                   memory=memory,
+                   policy=policy,
+                   nb_actions=actions,
+                   nb_steps_warmup=10,
+                   target_model_update=1e-2)
     return dqn
 
+start = datetime.datetime.now()
 
 dqn = build_agent(model, actions)
 dqn.compile(Adam(lr=1e-3), metrics=['mae'])
 dqn.fit(env, nb_steps=60000, visualize=False, verbose=1)
 
-
 results = dqn.test(env, nb_episodes=150, visualize=False)
 print(np.mean(results.history['episode_reward']))
+
+end = datetime.datetime.now()
+
+print(f"Duration: {end - start}")

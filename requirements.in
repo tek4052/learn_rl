@@ -1,7 +1,10 @@
 pandas
 tabulate
 gym
+gym[atari]
 pyglet
 tensorflow
 keras
 keras-rl2
+matplotlib
+opencv-python
